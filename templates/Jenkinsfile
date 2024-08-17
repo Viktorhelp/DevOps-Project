@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_CREDENTIALS = credentials('aws-credentials')
+        DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/ngx-api-utils/ngx-api-utils.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build('ngx-api-utils:latest')
+                }
+            }
+        }
+
+        stage('Push Docker Image to AWS ECR') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        docker.image('ngx-api-utils:latest').push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'helm upgrade --install ngx-api-utils ./helm-chart'
+            }
+        }
+    }
+}

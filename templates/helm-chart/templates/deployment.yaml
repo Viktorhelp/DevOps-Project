@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ngx-api-utils
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: ngx-api-utils
+  template:
+    metadata:
+      labels:
+        app: ngx-api-utils
+    spec:
+      containers:
+        - name: ngx-api-utils
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 80
